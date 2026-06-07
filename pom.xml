@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+      Aggregator (a.k.a. "reactor") POM.
+      It does not build anything itself (packaging=pom); it just ties the
+      independent microservice modules together so `mvn package` at the root
+      builds all of them in dependency order.
+      Each child module declares its OWN spring-boot-starter-parent, so the
+      services stay independently buildable/deployable (true microservice style).
+    -->
+    <groupId>com.jobtracker</groupId>
+    <artifactId>job-tracker</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+    <name>job-tracker</name>
+    <description>Job Tracker - Spring Boot microservices backend refresher</description>
+
+    <modules>
+        <module>discovery-server</module>
+        <module>api-gateway</module>
+        <module>job-service</module>
+    </modules>
+</project>

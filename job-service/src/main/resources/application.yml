@@ -1,0 +1,46 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: job-service
+
+  # PostgreSQL. Defaults target a LOCAL postgres on :5432; in Docker these are
+  # overridden by env vars (see docker-compose.yml) to point at the postgres
+  # container. The driver is inferred from the JDBC URL.
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/jobtracker}
+    username: ${SPRING_DATASOURCE_USERNAME:jobtracker}
+    password: ${SPRING_DATASOURCE_PASSWORD:jobtracker}
+
+  jpa:
+    hibernate:
+      # Flyway owns the schema. Hibernate only VALIDATES that the tables match
+      # the @Entity classes — it never creates or alters anything.
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  # Flyway applies db/migration/V*.sql on startup, before JPA validation.
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+# Seed sample data on first boot (only if the table is empty). Set to false
+# once you have real data you don't want demo rows mixed into.
+app:
+  seed-sample-data: ${APP_SEED_SAMPLE_DATA:true}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+  instance:
+    prefer-ip-address: true
+
+# Swagger UI at http://localhost:8081/swagger-ui.html
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

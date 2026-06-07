@@ -1,0 +1,66 @@
+# One command brings up the whole system: docker compose up --build
+# Each service builds its own image from its Dockerfile (Maven runs inside the
+# build container, so you do NOT need Maven or a JDK installed locally).
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    environment:
+      POSTGRES_DB: jobtracker
+      POSTGRES_USER: jobtracker
+      POSTGRES_PASSWORD: jobtracker
+    ports:
+      - "5433:5432"   # host:container — 5433 avoids clashing with a local postgres
+    volumes:
+      - jobdata:/var/lib/postgresql/data   # <-- this is what makes data survive restarts
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jobtracker -d jobtracker"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  discovery-server:
+    build: ./discovery-server
+    container_name: discovery-server
+    ports:
+      - "8761:8761"   # Eureka dashboard: http://localhost:8761
+
+  job-service:
+    build: ./job-service
+    container_name: job-service
+    environment:
+      EUREKA_URI: http://discovery-server:8761/eureka
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/jobtracker
+      SPRING_DATASOURCE_USERNAME: jobtracker
+      SPRING_DATASOURCE_PASSWORD: jobtracker
+    ports:
+      - "8081:8081"   # direct access (Swagger) for debugging
+    depends_on:
+      discovery-server:
+        condition: service_started
+      postgres:
+        condition: service_healthy   # wait until Postgres accepts connections
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    environment:
+      EUREKA_URI: http://discovery-server:8761/eureka
+    ports:
+      - "8080:8080"   # the single entry point clients use
+    depends_on:
+      - discovery-server
+      - job-service
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:80"     # open the app at http://localhost:3000
+    depends_on:
+      - api-gateway
+
+# Named volume: lives on your machine independently of the containers, so
+# `docker compose down` + `up` keeps your data. (Use `down -v` to wipe it.)
+volumes:
+  jobdata:
