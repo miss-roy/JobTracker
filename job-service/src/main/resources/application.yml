@@ -39,6 +39,9 @@ eureka:
       defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
   instance:
     prefer-ip-address: true
+    # Unique id per instance so multiple job-service replicas register distinctly
+    # (otherwise same host:port collides and Eureka sees only one).
+    instance-id: ${spring.application.name}:${random.value}
 
 # Swagger UI at http://localhost:8081/swagger-ui.html
 springdoc:

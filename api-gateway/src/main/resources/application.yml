@@ -8,12 +8,37 @@ spring:
     gateway:
       routes:
         # Forward every /api/** request to job-service.
-        # lb:// means "load-balanced via the service registry" (Eureka),
-        # so we never hard-code job-service's host/port.
+        # lb:// = load-balanced via the service registry (Eureka), so when there
+        # are multiple job-service instances the gateway round-robins across them.
         - id: job-service
           uri: lb://job-service
           predicates:
             - Path=/api/**
+          filters:
+            # Wrap the downstream call in a circuit breaker. If job-service is
+            # down/slow/erroring past the threshold, the breaker opens and we
+            # return the fallback instead of hanging or cascading the failure.
+            - name: CircuitBreaker
+              args:
+                name: jobServiceCB
+                fallbackUri: forward:/fallback/jobs
+
+# Circuit-breaker + time-limiter tuning for the "jobServiceCB" instance above.
+resilience4j:
+  circuitbreaker:
+    instances:
+      jobServiceCB:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10                 # look at the last 10 calls
+        minimum-number-of-calls: 5              # don't judge until we've seen 5
+        failure-rate-threshold: 50              # open if >=50% of them failed
+        wait-duration-in-open-state: 10s        # stay open 10s, then test again
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+  timelimiter:
+    instances:
+      jobServiceCB:
+        timeout-duration: 4s                    # a call slower than 4s counts as a failure
 
 eureka:
   client:
@@ -21,3 +46,5 @@ eureka:
       defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
   instance:
     prefer-ip-address: true
+    # Unique id per instance so multiple gateway replicas register distinctly.
+    instance-id: ${spring.application.name}:${random.value}
