@@ -16,8 +16,8 @@ spring:
             - Path=/api/**
           filters:
             # Wrap the downstream call in a circuit breaker. If job-service is
-            # down/slow/erroring past the threshold, the breaker opens and we
-            # return the fallback instead of hanging or cascading the failure.
+            # down/slow/erroring past the threshold, the breaker opens and
+            # returns the fallback instead of hanging or cascading the failure.
             - name: CircuitBreaker
               args:
                 name: jobServiceCB
@@ -30,7 +30,7 @@ resilience4j:
       jobServiceCB:
         sliding-window-type: COUNT_BASED
         sliding-window-size: 10                 # look at the last 10 calls
-        minimum-number-of-calls: 5              # don't judge until we've seen 5
+        minimum-number-of-calls: 5              # don't evaluate the rate until 5 calls seen
         failure-rate-threshold: 50              # open if >=50% of them failed
         wait-duration-in-open-state: 10s        # stay open 10s, then test again
         permitted-number-of-calls-in-half-open-state: 3

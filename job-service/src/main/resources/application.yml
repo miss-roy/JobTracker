@@ -29,7 +29,7 @@ spring:
     baseline-on-migrate: true
 
 # Seed sample data on first boot (only if the table is empty). Set to false
-# once you have real data you don't want demo rows mixed into.
+# once real data exists, to avoid mixing in demo rows.
 app:
   seed-sample-data: ${APP_SEED_SAMPLE_DATA:true}
 

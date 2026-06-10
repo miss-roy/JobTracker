@@ -9,8 +9,8 @@ import java.util.Map;
 
 /**
  * Where the circuit breaker sends traffic when job-service is unavailable.
- * The route's `fallbackUri: forward:/fallback/jobs` forwards here, and we
- * return a clean 503 so clients fail fast with a useful message instead of
+ * The route's `fallbackUri: forward:/fallback/jobs` forwards here, returning
+ * a clean 503 so clients fail fast with a useful message instead of
  * hanging on a dead/slow backend.
  */
 @RestController
@@ -23,7 +23,7 @@ public class FallbackController {
                         "error", "job-service unavailable",
                         "message", "The job service is temporarily unreachable. "
                                 + "This fallback was returned by the API gateway's circuit breaker "
-                                + "so your request fails fast instead of hanging.",
+                                + "so the request fails fast instead of hanging.",
                         "status", 503
                 ));
     }

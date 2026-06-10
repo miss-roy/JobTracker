@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { STATUS_META, type JobInput, type JobStatus } from '../types'
 
 interface Props {
-  status: JobStatus // the tab we're adding into
+  status: JobStatus // the tab being added into
   onClose: () => void
   onSubmit: (input: JobInput) => Promise<void>
 }

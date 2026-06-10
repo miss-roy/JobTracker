@@ -6,7 +6,7 @@ import com.jobtracker.job.model.JobStatus;
 import java.time.LocalDate;
 
 /**
- * What we return to clients. Keeping a separate response DTO (instead of
+ * Returned to clients. Keeping a separate response DTO (instead of
  * leaking the JPA entity) means the API contract is decoupled from the
  * database schema.
  */

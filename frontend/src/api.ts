@@ -3,7 +3,7 @@ import type { Job, JobInput, JobStatus, StatusCount } from './types'
 // Web/Docker: VITE_API_BASE is empty, so URLs are relative ("/api/...") and
 //   get proxied to the gateway by Vite (dev) or nginx (docker).
 // iOS (Capacitor): the webview loads from capacitor://localhost with no proxy,
-//   so we build with VITE_API_BASE=http://localhost:8080 (see `npm run build:ios`)
+//   so the build sets VITE_API_BASE=http://localhost:8080 (see `npm run build:ios`)
 //   to call the gateway with an absolute URL.
 const API_ROOT = import.meta.env.VITE_API_BASE ?? ''
 const BASE = `${API_ROOT}/api/jobs`

@@ -15,7 +15,7 @@ import java.util.List;
  * Seeds a few sample applications, but only when the table is empty AND
  * app.seed-sample-data is true (the default). With a persistent Postgres
  * database this effectively runs once; disable it (APP_SEED_SAMPLE_DATA=false)
- * once you have real data you don't want demo rows mixed into.
+ * once real data exists, to avoid mixing in demo rows.
  */
 @Configuration
 @ConditionalOnProperty(name = "app.seed-sample-data", havingValue = "true", matchIfMissing = true)

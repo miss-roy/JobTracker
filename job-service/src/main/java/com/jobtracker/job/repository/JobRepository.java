@@ -9,8 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 /**
- * Spring Data JPA gives us all the CRUD for free just by extending JpaRepository.
- * We only declare the extra queries we need.
+ * Spring Data JPA provides all the CRUD for free just by extending JpaRepository.
+ * Only the extra queries are declared here.
  */
 public interface JobRepository extends JpaRepository<Job, Long> {
 

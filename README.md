@@ -258,7 +258,7 @@ docker compose start job-service                  # auto-recovers within ~10s
 ## Notes / trade-offs
 - `job-service` no longer publishes `:8081`, so **Swagger** isn't directly
   exposed while scaled. Use `docker compose run --service-ports job-service`
-  (single instance) when you need the Swagger UI.
+  (single instance) for Swagger UI access.
 - The edge LB can look briefly skewed toward one gateway (nginx caches DNS ~1s);
   it evens out under sustained traffic. Traefik/Envoy give smoother per-request
   balancing in production.

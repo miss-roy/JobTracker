@@ -12,8 +12,8 @@ import java.net.InetAddress;
 
 /**
  * Stamps every response with an "X-Served-By" header naming the job-service
- * instance that handled the request. Lets us *see* the gateway's client-side
- * load balancing spread requests across multiple replicas.
+ * instance that handled the request, making the gateway's client-side load
+ * balancing visible across replicas.
  */
 @Component
 public class InstanceHeaderFilter extends OncePerRequestFilter {

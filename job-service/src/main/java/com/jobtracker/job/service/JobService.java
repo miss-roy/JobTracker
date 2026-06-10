@@ -70,7 +70,7 @@ public class JobService {
     }
 
     /**
-     * Counts per status for the pie chart. We start from a full map so every
+     * Counts per status for the pie chart. Starts from a full map so every
      * status appears (with 0) even when it has no applications yet.
      */
     @Transactional(readOnly = true)

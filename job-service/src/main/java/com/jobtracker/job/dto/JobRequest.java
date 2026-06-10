@@ -9,7 +9,7 @@ import java.time.LocalDate;
 /**
  * Incoming payload for creating/updating a job. A record keeps it immutable
  * and concise; bean-validation annotations are enforced by @Valid in the
- * controller before we ever touch the database.
+ * controller before the database is ever touched.
  */
 public record JobRequest(
         @NotBlank(message = "company is required")
