@@ -51,12 +51,39 @@ body {
 .pie-total small { color: var(--muted); }
 
 /* ---- tabs ---- */
+/* Wrapper holds the edge-fade gradients that hint the row is scrollable. */
+.tabs-wrap { position: relative; }
+.tabs-wrap::before,
+.tabs-wrap::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 32px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 1;
+}
+.tabs-wrap::before { left: 0; background: linear-gradient(to right, var(--bg), transparent); }
+.tabs-wrap::after  { right: 0; background: linear-gradient(to left, var(--bg), transparent); }
+/* Shown only when there's more to scroll in that direction (toggled in TabBar). */
+.tabs-wrap.fade-left::before { opacity: 1; }
+.tabs-wrap.fade-right::after { opacity: 1; }
+
 .tabs {
   display: flex;
+  flex-wrap: nowrap;                    /* single row, like the website */
   gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 4px;
+  overflow-x: auto;                     /* horizontal scroll for the off-screen tabs */
+  -webkit-overflow-scrolling: touch;    /* momentum/touch scrolling on iOS */
+  scroll-snap-type: x proximity;
+  padding-bottom: 2px;
 }
+/* Hide the raw scrollbar — the edge fade is the affordance now. */
+.tabs { scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { scroll-snap-align: start; }
 .tab {
   flex: 0 0 auto;
   display: flex;
