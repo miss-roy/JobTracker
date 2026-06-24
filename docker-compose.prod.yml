@@ -1,0 +1,90 @@
+# Production stack. Differences from docker-compose.yml (the dev file):
+#   - secrets come from a .env file (not hardcoded)
+#   - Postgres, Eureka, gateways and job-service are NOT exposed to the internet
+#   - a Caddy reverse proxy is the only public entry point (auto-HTTPS)
+#   - every service restarts automatically if it crashes / on reboot
+#
+# Deploy:   docker compose -f docker-compose.prod.yml up -d --build
+# Scale:    docker compose -f docker-compose.prod.yml up -d --scale job-service=3 --scale api-gateway=2
+# (Requires a .env file next to this one — see .env.example.)
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - jobdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+    # No published ports: only reachable by other containers on the internal network.
+
+  discovery-server:
+    build: ./discovery-server
+    restart: unless-stopped
+    # Internal only — the Eureka dashboard is not exposed publicly.
+
+  job-service:
+    build: ./job-service
+    environment:
+      EUREKA_URI: http://discovery-server:8761/eureka
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      APP_SEED_SAMPLE_DATA: ${APP_SEED_SAMPLE_DATA:-false}
+    depends_on:
+      discovery-server:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  api-gateway:
+    build: ./api-gateway
+    environment:
+      EUREKA_URI: http://discovery-server:8761/eureka
+    depends_on:
+      - discovery-server
+      - job-service
+    restart: unless-stopped
+
+  edge:
+    image: nginx:alpine
+    volumes:
+      - ./edge/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api-gateway
+    restart: unless-stopped
+    # Internal LB across gateway replicas; fronted by Caddy.
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - edge
+    restart: unless-stopped
+    # Internal only; Caddy serves it publicly.
+
+  caddy:
+    image: caddy:2-alpine
+    environment:
+      DOMAIN: ${DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+    restart: unless-stopped
+
+volumes:
+  jobdata:
+  caddy_data:
+  caddy_config:

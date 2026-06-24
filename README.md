@@ -1,5 +1,10 @@
 # Job Tracker
 
+[![CI](https://github.com/miss-roy/JobTracker/actions/workflows/ci.yml/badge.svg)](https://github.com/miss-roy/JobTracker/actions/workflows/ci.yml)
+![Java](https://img.shields.io/badge/Java-21-orange)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3-brightgreen)
+![License](https://img.shields.io/badge/License-MIT-blue)
+
 A **Spring Boot microservices** project with a **React + Vite** frontend,
 focused on backend engineering. Track job applications across statuses
 (*Applied, Interviewing, Offered, Rejected, Ghosted*), view a pie-chart
@@ -128,15 +133,24 @@ mvn clean package        # builds all three services, runs job-service tests
 
 ---
 
+## Deployment
+To host this publicly (with HTTPS), see **[DEPLOY.md](DEPLOY.md)**. It covers a
+single-server Docker deployment (`docker-compose.prod.yml` + `Caddyfile`, full
+architecture) and a free split-hosting option. Secrets are supplied via a `.env`
+file (template in [`.env.example`](.env.example)).
+
 ## Project layout
 ```
 JobTracker/
 ├── pom.xml                 # aggregator (reactor) POM
-├── docker-compose.yml
+├── docker-compose.yml      # local/dev stack
+├── docker-compose.prod.yml # production stack (secrets via .env, HTTPS via Caddy)
+├── Caddyfile               # reverse proxy + automatic HTTPS
+├── DEPLOY.md               # hosting guide
 ├── discovery-server/       # Eureka
 ├── api-gateway/            # Spring Cloud Gateway
-├── job-service/            # Web + JPA + H2 (the domain service + tests)
-└── frontend/               # React + Vite + Recharts
+├── job-service/            # Web + JPA + Postgres (the domain service + tests)
+└── frontend/               # React + Vite + Recharts (+ Capacitor iOS)
 ```
 
 ---

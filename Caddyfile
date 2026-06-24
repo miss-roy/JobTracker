@@ -1,0 +1,7 @@
+# Caddy automatically obtains and renews a free HTTPS certificate for $DOMAIN
+# (set in .env), then reverse-proxies all traffic to the frontend container.
+# The frontend serves the React app and forwards /api to the gateways internally.
+{$DOMAIN} {
+	encode gzip
+	reverse_proxy frontend:80
+}

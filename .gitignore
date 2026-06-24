@@ -27,5 +27,10 @@ dist/
 .vite/
 npm-debug.log*
 
+# ---- secrets / local env ----
+.env
+*.env
+!.env.example
+
 # ---- OS ----
 .DS_Store
