@@ -11,9 +11,11 @@ Hosts the **full architecture** (Eureka, load balancing, circuit breaker) exactl
 as in the repo. Costs roughly $4–6/month for a small VM.
 
 ### 1. Get a server
-Create a small Linux VM (Ubuntu 22.04+) on any provider — e.g. Hetzner,
-DigitalOcean, or Oracle Cloud's free tier. **2 GB RAM minimum** (the Java images
-build inside the server). Note its public IP.
+Create a small Linux VM (Ubuntu 22.04+). **This Java microservices stack needs
+≥ 2 GB RAM** — a 1 GB "$5" box will run out of memory (3 JVMs + Postgres build
+and run on it). Best value: **Hetzner** `CX22` (x86) or `CAX11` (ARM) — about
+$5/mo for 2 vCPU / 4 GB, plenty of headroom. DigitalOcean / Vultr / Linode also
+work, but their 2 GB tiers run ~$12/mo. Note the server's public IP.
 
 ### 2. Point a domain at it
 Buy a cheap domain (or use a free subdomain). Add a DNS **A record** for e.g.
