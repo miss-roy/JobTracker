@@ -279,3 +279,90 @@ docker compose start job-service                  # auto-recovers within ~10s
 - Still single-node where it's intentional: Eureka, Postgres. Production next
   steps would be HA Eureka, Postgres replicas/pooling, distributed tracing
   (Micrometer + Zipkin), and async messaging (Kafka) for inter-service events.
+
+---
+---
+
+# Phase 3 — Production Deployment (Live on the Cloud)
+
+**What Phase 3 is about (in a nutshell):** the application moves from running
+locally to a **publicly accessible, secure, always-on deployment** on cloud
+infrastructure. The full containerized microservices stack runs on a single
+cloud virtual machine behind a reverse proxy that terminates HTTPS and is
+reachable at a real domain.
+
+**🔗 Live demo:** https://jobtracker09.duckdns.org
+
+The themes:
+- **Production configuration** — a hardened compose setup with secrets supplied
+  from an environment file and a single public entry point.
+- **Cloud hosting** — the entire stack deployed to a Google Cloud virtual machine.
+- **Domain + HTTPS** — a public domain served over an automatically issued and
+  renewed TLS certificate.
+
+> **Additive update.** Everything from Phase 1 and Phase 2 still applies. This
+> phase adds deployment artifacts and a live environment without changing the
+> application code or the API.
+
+## What this phase added
+
+| Area | Before | After |
+|---|---|---|
+| Runtime | Local Docker only | **Live on a Google Cloud VM**, always-on |
+| Access | `localhost` | Public URL: **https://jobtracker09.duckdns.org** |
+| Transport | HTTP | **HTTPS** (auto-issued, auto-renewing certificate) |
+| Secrets | inline in compose | **Environment file** (`.env`), never committed |
+| Exposure | all ports published | **Only the reverse proxy is public**; database, registry, gateway and services stay on the internal network |
+| Resilience | manual start | **Automatic restart** on crash or reboot |
+
+## Deployment topology
+
+```
+Browser ──HTTPS──▶ Caddy (reverse proxy, automatic TLS)   :443
+                      │
+                      ▼
+                  frontend (nginx, serves the SPA)
+                      │  /api
+                      ▼
+                  edge (load balancer)
+                      │
+                      ▼
+                  api-gateway ──▶ job-service ──▶ PostgreSQL
+                      ▲                 │
+                      └───── Eureka ◀────┘
+       (all containers run on one cloud VM; only the reverse proxy is exposed)
+```
+
+## What was done in this phase
+
+- **Production compose (`docker-compose.prod.yml`)** — environment-driven
+  secrets, no publicly exposed database/registry/gateway ports, automatic
+  container restart, and a reverse proxy as the sole public service.
+- **Reverse proxy (`Caddyfile`)** — Caddy fronts the stack, serving the frontend
+  and forwarding API traffic internally, with automatic HTTPS.
+- **Cloud deployment** — the full stack was containerized and deployed to a
+  Google Cloud Compute Engine virtual machine (Ubuntu + Docker), running every
+  service: reverse proxy, frontend, edge load balancer, API gateway, Eureka
+  registry, job-service, and PostgreSQL.
+- **Public domain** — a free dynamic-DNS subdomain (DuckDNS) resolves to the
+  server's public IP.
+- **Automatic TLS** — an HTTPS certificate is issued and renewed automatically
+  (Let's Encrypt via Caddy), with HTTP redirected to HTTPS.
+- **Live demo data** — sample records are seeded so the public site is populated.
+- **Deployment guide (`DEPLOY.md`)** — documents single-server and split-hosting
+  options, with secrets supplied via `.env` (template in `.env.example`).
+- **Repository polish** — MIT license, README status badges, and a continuous
+  integration workflow that builds and tests the backend and frontend.
+- **UI refinement** — the status tabs use a single-row horizontal scroller with
+  an edge-fade cue indicating more tabs are scrollable, applied to both the web
+  and iOS clients.
+
+## Notes / trade-offs
+
+- The live environment runs on a single virtual machine; production-grade next
+  steps would include multiple VMs behind a managed load balancer, a managed
+  PostgreSQL instance, and a custom domain.
+- The cloud free-credit period is time-limited; the environment can be resized,
+  migrated to a cheaper host, or taken down afterward.
+- HTTPS depends on a domain; a dynamic-DNS subdomain is used here and can be
+  swapped for a custom domain without code changes.
