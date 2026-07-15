@@ -27,6 +27,19 @@ export function Login({ onAuth }: Props) {
     }
   }
 
+  // One-click demo login — no typing required.
+  const demoLogin = async () => {
+    setBusy(true)
+    setError(null)
+    try {
+      const res = await auth.login('demo', 'demo1234')
+      onAuth(res.username)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Demo login failed')
+      setBusy(false)
+    }
+  }
+
   return (
     <div className="auth-wrap">
       <div className="auth-card">
@@ -78,9 +91,9 @@ export function Login({ onAuth }: Props) {
           </button>
         </p>
 
-        <p className="auth-demo">
-          Just exploring? Try the demo — <strong>demo</strong> / <strong>demo1234</strong>
-        </p>
+        <button type="button" className="auth-demo-btn" onClick={demoLogin} disabled={busy}>
+          Just exploring? <strong>Try the demo →</strong>
+        </button>
       </div>
     </div>
   )

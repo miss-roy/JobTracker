@@ -79,11 +79,22 @@ body {
   background: none; border: none; color: var(--accent);
   font-weight: 600; cursor: pointer; font-size: 14px; padding: 0;
 }
-.auth-demo {
-  text-align: center; color: var(--muted); font-size: 12px;
-  margin: 16px 0 0; padding-top: 14px; border-top: 1px solid var(--line);
+.auth-demo-btn {
+  display: block;
+  width: 100%;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  margin: 16px 0 0;
+  padding-top: 14px;
+  border: none;
+  border-top: 1px solid var(--line);
+  background: none;
+  cursor: pointer;
 }
-.auth-demo strong { color: var(--text); }
+.auth-demo-btn strong { color: var(--accent); font-weight: 600; }
+.auth-demo-btn:hover strong { text-decoration: underline; }
+.auth-demo-btn:disabled { opacity: 0.6; cursor: default; }
 
 .card {
   background: var(--card);
