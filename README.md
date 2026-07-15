@@ -366,3 +366,75 @@ Browser ──HTTPS──▶ Caddy (reverse proxy, automatic TLS)   :443
   migrated to a cheaper host, or taken down afterward.
 - HTTPS depends on a domain; a dynamic-DNS subdomain is used here and can be
   swapped for a custom domain without code changes.
+
+---
+---
+
+# Phase 4 — Authentication & Per-User Data
+
+**What Phase 4 is about (in a nutshell):** the application becomes **multi-user**.
+Each person signs up, logs in, and gets a **private board** — their own job
+applications only. Every request is authenticated with a JSON Web Token (JWT),
+and every database query is scoped to the signed-in user, so no one can see or
+touch anyone else's data.
+
+The themes:
+- **Authentication** — register/login with JWT-based, stateless security.
+- **Authorization / isolation** — jobs are owned by a user; queries are
+  scoped so users only ever access their own records.
+- **Same experience on web and iOS** — both clients share one authenticated
+  backend.
+
+> **Additive update.** Everything from Phases 1–3 still applies. The public API
+> is now protected: unauthenticated requests receive `401`.
+
+## What this phase added
+
+| Area | Before | After |
+|---|---|---|
+| Access | open API — anyone could read/write all jobs | **login required**; unauthenticated → `401` |
+| Data | one shared list for everyone | **private per user** — each account sees only its own jobs |
+| Identity | none | `users` table; **BCrypt**-hashed passwords |
+| Sessions | none | **stateless JWT** (Bearer token), 24h expiry |
+| Clients | — | login/register screen on **web and iOS** |
+
+## How a request is authenticated
+
+```
+Login ─▶ POST /api/auth/login ─▶ returns a JWT
+Then every call carries:  Authorization: Bearer <token>
+        │
+        ▼
+  JWT filter validates the token ─▶ sets the current user
+        │
+        ▼
+  queries run as  WHERE user_id = <current user>   (data isolation)
+```
+
+## What was done in this phase
+
+- **Spring Security + JWT** (`jjwt`) — stateless authentication; a filter reads
+  the `Authorization: Bearer` header, validates the token, and sets the
+  authenticated principal. Missing/invalid tokens return `401`.
+- **User accounts** — a `users` table (Flyway `V2`) with **BCrypt**-hashed
+  passwords; `register` and `login` endpoints return a signed JWT.
+- **Ownership & isolation** — jobs gain a `user_id` owner column; every service
+  and repository method is scoped by the current user, and ownership is checked
+  on read/update/delete so accounts are fully separated.
+- **Graceful errors** — `401` for missing/invalid tokens, `401` for bad
+  credentials, `409` for a taken username.
+- **Demo account** — the seeder provisions a `demo` account (with a sample
+  board) and adopts any pre-auth jobs into it, so an existing database keeps its
+  data through the upgrade.
+- **Clients** — a login/register screen on both the **web** and **iOS** apps;
+  the JWT is stored client-side and sent as a Bearer token, with automatic
+  logout when the token expires.
+- **Tests** — cover the auth flow and verify cross-user isolation (one user
+  cannot see another's jobs).
+
+## Notes / trade-offs
+
+- The JWT signing secret is supplied via `JWT_SECRET` (never committed).
+- Auth and user storage live in `job-service` alongside the domain; a dedicated
+  auth service is a possible future refinement.
+- Natural next steps: token refresh, OAuth2 social login, and roles/permissions.
