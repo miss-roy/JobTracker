@@ -31,6 +31,59 @@ body {
 
 .app-head h1 { margin: 0; font-size: 28px; }
 .app-head p { margin: 2px 0 0; font-weight: 600; }
+.app-head-row { display: flex; align-items: center; justify-content: space-between; }
+.whoami { color: var(--muted); font-weight: 500; }
+.logout-btn {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.logout-btn:hover { color: var(--text); border-color: var(--muted); }
+
+/* ---- auth (login / register) ---- */
+.auth-wrap {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 28px 24px;
+}
+.auth-card h1 { margin: 0; font-size: 30px; text-align: center; }
+.auth-sub { margin: 6px 0 22px; text-align: center; color: var(--muted); }
+.auth-form { display: flex; flex-direction: column; gap: 14px; }
+.auth-form label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--muted); }
+.auth-form input {
+  background: var(--card-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px;
+  color: var(--text);
+  font-size: 15px;
+}
+.auth-form input:focus { outline: 2px solid var(--accent); border-color: transparent; }
+.auth-form .btn-primary { margin-top: 4px; }
+.auth-toggle { text-align: center; color: var(--muted); font-size: 14px; margin: 18px 0 0; }
+.auth-toggle button {
+  background: none; border: none; color: var(--accent);
+  font-weight: 600; cursor: pointer; font-size: 14px; padding: 0;
+}
+.auth-demo {
+  text-align: center; color: var(--muted); font-size: 12px;
+  margin: 16px 0 0; padding-top: 14px; border-top: 1px solid var(--line);
+}
+.auth-demo strong { color: var(--text); }
 
 .card {
   background: var(--card);

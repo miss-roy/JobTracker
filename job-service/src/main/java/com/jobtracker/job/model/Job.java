@@ -44,4 +44,9 @@ public class Job {
     private LocalDate dateApplied;
 
     private String hrContact;
+
+    // Owner of this job. Every query is scoped by this so users only ever see
+    // and modify their own applications.
+    @Column(name = "user_id")
+    private Long userId;
 }

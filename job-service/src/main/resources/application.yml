@@ -32,6 +32,11 @@ spring:
 # once real data exists, to avoid mixing in demo rows.
 app:
   seed-sample-data: ${APP_SEED_SAMPLE_DATA:true}
+  jwt:
+    # Base64-encoded HMAC-SHA256 secret. Override with a strong value in prod
+    # via JWT_SECRET. This dev default is fine for local runs only.
+    secret: ${JWT_SECRET:ZGV2LW9ubHktc2VjcmV0LWNoYW5nZS1tZS1pbi1wcm9kdWN0aW9uLTAxMjM0NTY3ODk=}
+    expiration: ${JWT_EXPIRATION:86400000}   # token lifetime in ms (24h)
 
 eureka:
   client:

@@ -17,6 +17,8 @@ import java.util.Map;
 
 /**
  * Business logic lives here, keeping controllers thin and the repository dumb.
+ * Every method takes the current user's id so all data access is scoped to the
+ * owner — a user can never see or touch another user's jobs.
  */
 @Service
 @RequiredArgsConstructor
@@ -25,34 +27,35 @@ public class JobService {
     private final JobRepository repository;
 
     @Transactional(readOnly = true)
-    public List<JobResponse> findAll(JobStatus status) {
+    public List<JobResponse> findAll(Long userId, JobStatus status) {
         List<Job> jobs = (status == null)
-                ? repository.findAllByOrderByDateAppliedDesc()
-                : repository.findByStatusOrderByDateAppliedDesc(status);
+                ? repository.findByUserIdOrderByDateAppliedDesc(userId)
+                : repository.findByUserIdAndStatusOrderByDateAppliedDesc(userId, status);
         return jobs.stream().map(JobResponse::from).toList();
     }
 
     @Transactional(readOnly = true)
-    public JobResponse findById(Long id) {
-        return repository.findById(id)
+    public JobResponse findById(Long userId, Long id) {
+        return repository.findByIdAndUserId(id, userId)
                 .map(JobResponse::from)
                 .orElseThrow(() -> new JobNotFoundException(id));
     }
 
     @Transactional
-    public JobResponse create(JobRequest request) {
+    public JobResponse create(Long userId, JobRequest request) {
         Job job = Job.builder()
                 .company(request.company())
                 .status(request.status())
                 .dateApplied(request.dateApplied())
                 .hrContact(request.hrContact())
+                .userId(userId)
                 .build();
         return JobResponse.from(repository.save(job));
     }
 
     @Transactional
-    public JobResponse update(Long id, JobRequest request) {
-        Job job = repository.findById(id)
+    public JobResponse update(Long userId, Long id, JobRequest request) {
+        Job job = repository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new JobNotFoundException(id));
         job.setCompany(request.company());
         job.setStatus(request.status());
@@ -62,24 +65,24 @@ public class JobService {
     }
 
     @Transactional
-    public void delete(Long id) {
-        if (!repository.existsById(id)) {
+    public void delete(Long userId, Long id) {
+        if (!repository.existsByIdAndUserId(id, userId)) {
             throw new JobNotFoundException(id);
         }
         repository.deleteById(id);
     }
 
     /**
-     * Counts per status for the pie chart. Starts from a full map so every
-     * status appears (with 0) even when it has no applications yet.
+     * Counts per status for this user's pie chart. Starts from a full map so
+     * every status appears (with 0) even when it has no applications yet.
      */
     @Transactional(readOnly = true)
-    public List<StatusCount> stats() {
+    public List<StatusCount> stats(Long userId) {
         Map<JobStatus, Long> counts = new EnumMap<>(JobStatus.class);
         for (JobStatus status : JobStatus.values()) {
             counts.put(status, 0L);
         }
-        for (StatusCount row : repository.countGroupedByStatus()) {
+        for (StatusCount row : repository.countGroupedByStatus(userId)) {
             counts.put(row.status(), row.count());
         }
         return counts.entrySet().stream()
