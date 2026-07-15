@@ -44,7 +44,7 @@ export function Login({ onAuth }: Props) {
               required
               autoFocus
               autoCapitalize="none"
-              placeholder="e.g. priya"
+              placeholder="Miss. Roy"
             />
           </label>
           <label>
